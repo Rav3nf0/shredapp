@@ -47,21 +47,57 @@ def scrape_hevy(url):
 
 # --- 3. GOOGLE FIT AGENT ---
 
+# def get_fit_service():
+#     """Handles OAuth handshake and returns the service object."""
+#     creds = None
+#     if os.path.exists('token.json'):
+#         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    
+#     if not creds or not creds.valid:
+#         if creds and creds.expired and creds.refresh_token:
+#             creds.refresh(Request())
+#         else:
+#             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+#             creds = flow.run_local_server(port=8080)
+#         with open('token.json', 'w') as token:
+#             token.write(creds.to_json())
+    
+#     return build('fitness', 'v1', credentials=creds)
 def get_fit_service():
-    """Handles OAuth handshake and returns the service object."""
+    """Handles OAuth for Streamlit Cloud."""
     creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    # Streamlit Cloud is ephemeral; we use a temporary path for the token
+    token_path = '/tmp/token.json'
+    
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
     
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=8080)
-        with open('token.json', 'w') as token:
+            # Pull from Secrets
+            creds_info = {
+                "installed": {
+                    "client_id": st.secrets["google_credentials"]["client_id"],
+                    "project_id": st.secrets["google_credentials"]["project_id"],
+                    "auth_uri": st.secrets["google_credentials"]["auth_uri"],
+                    "token_uri": st.secrets["google_credentials"]["token_uri"],
+                    "auth_provider_x509_cert_url": st.secrets["google_credentials"]["auth_provider_x509_cert_url"],
+                    "client_secret": st.secrets["google_credentials"]["client_secret"],
+                    "redirect_uris": st.secrets["google_credentials"]["redirect_uris"]
+                }
+            }
+            
+            flow = InstalledAppFlow.from_client_config(creds_info, SCOPES)
+            
+            # This will generate a link in the Streamlit UI for you to click
+            # instead of trying to open a browser automatically.
+            creds = flow.run_local_server(port=0, open_browser=False)
+
+        with open(token_path, 'w') as token:
             token.write(creds.to_json())
-    
+            
     return build('fitness', 'v1', credentials=creds)
 
 def sync_google_fit():
