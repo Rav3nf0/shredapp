@@ -1,0 +1,18 @@
+# Google API Secrets (CRITICAL)
+credentials.json
+token.json
+
+# Environment Variables (Gemini API Key)
+.env
+
+# Local Database (Keep your data local/private)
+shred_private.db
+
+# Python overhead
+__pycache__/
+*.py[cod]
+.venv/
+env/
+
+# Streamlit overhead
+.streamlit/
