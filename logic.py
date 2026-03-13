@@ -74,6 +74,7 @@ def get_fit_service(auth_code=None):
             # Load credentials from Streamlit Secrets (ensure TOML matches this structure)
             creds_info = {"installed": st.secrets["google_credentials"]}
             flow = InstalledAppFlow.from_client_config(creds_info, SCOPES)
+            flow.redirect_uri = "https://shredapp-gnrbluhmhzuksfukewqqkx.streamlit.app/"
             
             if auth_code:
                 # Process the manual code entered in the UI
